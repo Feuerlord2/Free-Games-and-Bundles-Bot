@@ -1,0 +1,23 @@
+{
+  "name": "Free-Games-and-Bundles-Bot",
+  "version": "1.0.0",
+  "description": "Discord Bot für RSS Feed Überwachung",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "keywords": ["discord", "bot", "rss", "news"],
+  "author": "Daniel Winter",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "rss-parser": "^3.13.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
