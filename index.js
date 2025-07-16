@@ -14,48 +14,48 @@ const client = new Client({
 
 const parser = new Parser();
 
-// RSS Feed Konfiguration - Hier können Sie Ihre 6 Feeds einfach anpassen
+// RSS Feed Konfiguration - Verwendet Environment Variables für individuelle Konfiguration
 const RSS_FEEDS = [
     {
         name: "Humble Games",
         url: "https://feuerlord2.github.io/Humble-RSS-Site/games.rss",
-        channelId: "1234567890123456789", // Ihre Channel ID
-        roleId: "1234567890123456789",    // Ihre Role ID (optional, null wenn keine Rolle gepingt werden soll)
+        channelId: process.env.HUMBLE_GAMES_CHANNEL_ID,
+        roleId: process.env.HUMBLE_GAMES_ROLE_ID || null,
         enabled: true
     },
     {
         name: "Humble Books",
         url: "https://feuerlord2.github.io/Humble-RSS-Site/books.rss",
-        channelId: "1234567890123456789",
-        roleId: "1234567890123456789",
+        channelId: process.env.HUMBLE_BOOKS_CHANNEL_ID,
+        roleId: process.env.HUMBLE_BOOKS_ROLE_ID || null,
         enabled: true
     },
     {
         name: "Humble Software",
         url: "https://feuerlord2.github.io/Humble-RSS-Site/software.rss",
-        channelId: "1234567890123456789",
-        roleId: "1234567890123456789",
+        channelId: process.env.HUMBLE_SOFTWARE_CHANNEL_ID,
+        roleId: process.env.HUMBLE_SOFTWARE_ROLE_ID || null,
         enabled: true
     },
     {
         name: "Fanatical Games",
         url: "https://feuerlord2.github.io/Fanatical-RSS-Site/games.rss",
-        channelId: "1234567890123456789",
-        roleId: "1234567890123456789",
+        channelId: process.env.FANATICAL_GAMES_CHANNEL_ID,
+        roleId: process.env.FANATICAL_GAMES_ROLE_ID || null,
         enabled: true
     },
     {
         name: "Fanatical Books",
         url: "https://feuerlord2.github.io/Fanatical-RSS-Site/books.rss",
-        channelId: "1234567890123456789",
-        roleId: "1234567890123456789",
+        channelId: process.env.FANATICAL_BOOKS_CHANNEL_ID,
+        roleId: process.env.FANATICAL_BOOKS_ROLE_ID || null,
         enabled: true
     },
     {
         name: "Fanatical Software",
         url: "https://feuerlord2.github.io/Fanatical-RSS-Site/software.rss",
-        channelId: "1234567890123456789",
-        roleId: "1234567890123456789",
+        channelId: process.env.FANATICAL_SOFTWARE_CHANNEL_ID,
+        roleId: process.env.FANATICAL_SOFTWARE_ROLE_ID || null,
         enabled: true
     }
 ];
@@ -92,7 +92,10 @@ function generateArticleId(item) {
 
 // RSS Feed parsen und neue Artikel senden
 async function checkFeed(feedConfig) {
-    if (!feedConfig.enabled) return;
+    if (!feedConfig.enabled || !feedConfig.channelId || feedConfig.channelId === 'undefined' || feedConfig.channelId === null) {
+        console.log(`⏭️  Überspringe Feed ${feedConfig.name} (Channel ID: ${feedConfig.channelId})`);
+        return;
+    }
 
     try {
         console.log(`Überprüfe Feed: ${feedConfig.name}`);
@@ -185,7 +188,27 @@ function truncateText(text, maxLength) {
 // Bot Events
 client.once('ready', () => {
     console.log(`Bot ist online als ${client.user.tag}`);
-    console.log(`Überwacht ${RSS_FEEDS.filter(f => f.enabled).length} RSS Feeds`);
+    
+    // Debug: Environment Variables anzeigen
+    console.log('🔍 Environment Variables Check:');
+    console.log(`HUMBLE_GAMES_CHANNEL_ID: ${process.env.HUMBLE_GAMES_CHANNEL_ID || 'NICHT GESETZT'}`);
+    console.log(`HUMBLE_BOOKS_CHANNEL_ID: ${process.env.HUMBLE_BOOKS_CHANNEL_ID || 'NICHT GESETZT'}`);
+    console.log(`HUMBLE_SOFTWARE_CHANNEL_ID: ${process.env.HUMBLE_SOFTWARE_CHANNEL_ID || 'NICHT GESETZT'}`);
+    
+    // Validierung der Feed-Konfiguration
+    const validFeeds = RSS_FEEDS.filter(feed => feed.channelId && feed.channelId !== 'undefined' && feed.channelId !== null);
+    const invalidFeeds = RSS_FEEDS.filter(feed => !feed.channelId || feed.channelId === 'undefined' || feed.channelId === null);
+    
+    if (invalidFeeds.length > 0) {
+        console.warn('⚠️  Folgende Feeds haben keine gültige Channel ID und werden übersprungen:');
+        invalidFeeds.forEach(feed => console.warn(`   - ${feed.name} (Channel ID: ${feed.channelId})`));
+    }
+    
+    console.log(`✅ Überwacht ${validFeeds.length} RSS Feeds`);
+    validFeeds.forEach(feed => {
+        const roleInfo = feed.roleId ? `mit Rolle ${feed.roleId}` : 'ohne Rolle-Ping';
+        console.log(`   - ${feed.name} → Channel ${feed.channelId} (${roleInfo})`);
+    });
     
     // Erste Überprüfung nach 10 Sekunden
     setTimeout(() => {
