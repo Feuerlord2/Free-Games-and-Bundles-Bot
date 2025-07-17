@@ -274,3 +274,16 @@ process.on('uncaughtException', error => {
 
 // Bot starten
 client.login(process.env.DISCORD_TOKEN);
+
+// Fake HTTP Server für Render
+const http = require('http');
+const port = process.env.PORT || 3000;
+
+const server = http.createServer((req, res) => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Discord Bot läuft!');
+});
+
+server.listen(port, () => {
+    console.log(`HTTP Server läuft auf Port ${port} (nur für Render)`);
+});
