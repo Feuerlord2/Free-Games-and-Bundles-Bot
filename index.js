@@ -287,3 +287,13 @@ const server = http.createServer((req, res) => {
 server.listen(port, () => {
     console.log(`HTTP Server läuft auf Port ${port} (nur für Render)`);
 });
+
+// Keep-Alive für Render Web Service
+setInterval(() => {
+    const https = require('https');
+    https.get('https://free-games-and-bundles-bot.onrender.com', (res) => {
+        console.log('🔄 Keep-alive ping gesendet');
+    }).on('error', (err) => {
+        console.log('Keep-alive ping Fehler:', err.message);
+    });
+}, 14 * 60 * 1000); // Alle 14 Minuten
